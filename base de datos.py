@@ -52,27 +52,27 @@ label_style = {"bg": '#003B71' , "fg": "white" }
 entry_style = {"bg": '#39A935' , "fg": "white" }
 
 
-label_aparato = tk.Label(root, text="Nombre", **label_style)
+label_aparato = tk.Label(root, text="aparato", **label_style)
 label_aparato.grid(row=0, column=0, padx=10, pady=5)
 entry_aparato = tk.Entry(root, **entry_style)
 entry_aparato.grid(row=0, column=1, padx=10, pady=5)
 
-label_cantidad_peso = tk.Label(root, text="edad", **label_style)
+label_cantidad_peso = tk.Label(root, text="cantidad o peso", **label_style)
 label_cantidad_peso.grid(row=1, column=0, padx=10, pady=5)
 entry_cantidad_peso = tk.Entry(root, **entry_style)
 entry_cantidad_peso.grid(row=1, column=1, padx=10, pady=5)
 
-label_categoria = tk.Label(root, text="email", **label_style)
+label_categoria = tk.Label(root, text="Categoria (plastico, metal, Vidrio)", **label_style)
 label_categoria.grid(row=2, column=0, padx=10, pady=5)
 entry_categoria = tk.Entry(root, **entry_style)
 entry_categoria.grid(row=2, column=1, padx=10, pady=5)
 
-label_estado = tk.Label(root, text="Telefono", **label_style)
+label_estado = tk.Label(root, text="Categoría (Plastico, Metal, Vidrio)", **label_style)
 label_estado.grid(row=3, column=0, padx=10, pady=5)
 entry_estado = tk.Entry(root, **entry_style)
 entry_estado.grid(row=3, column=1, padx=10, pady=5)
 
-label_comentario = tk.Label(root, text="Direccion", **label_style)
+label_comentario = tk.Label(root, text="Estado (Funciona, Dañado, Para piezas)", **label_style)
 label_comentario.grid(row=4, column=0, padx=10, pady=5)
 entry_comentario = tk.Entry(root, **entry_style)
 entry_comentario.grid(row=4,column=1, padx=10, pady=5)
