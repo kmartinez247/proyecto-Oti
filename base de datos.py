@@ -1,89 +1,119 @@
 import tkinter as tk
-from tkinter import messagebox
-from openpyxl import Workbook, load_workbook
+from tkinter import messagebox, ttk
+from db_unified import guardar_residuo, obtener_todos_registros
 import os
 
-nombre_archivo ='datos.xls'
-#comprobar si  el archivo ya existe 
-if os.path.exists(nombre_archivo):
-    wb = load_workbook(nombre_archivo)
-    ws = wb.active
-else:
-    #crear el libro de excel
-    wb = Workbook ()
-    ws = wb.active
-    ws.append(["Aparato", "Cantidad/peso", "Categoria", "Estado", "Algún comentario "])
-
+nombre_archivo = 'registros_ewaste.xlsx'  # Usar el mismo archivo
 
 def guardar_datos():
-    aparato =entry_aparato.get()
-    cantidad_peso =entry_cantidad_peso.get()
-    categoria =entry_categoria.get()
-    estado =entry_estado.get()
-    comentario =entry_comentario.get()
+    aparato = entry_aparato.get()
+    cantidad_peso = entry_cantidad_peso.get()
+    categoria = entry_categoria.get()
+    estado = entry_estado.get()
+    comentario = entry_comentario.get()
 
-    if not aparato or not cantidad_peso or not categoria or not estado or not comentario: 
-        messagebox.showwarning( "Advertencia", " Todos los campos son obligatorios ")
+    if not aparato or not cantidad_peso or not categoria or not estado:
+        messagebox.showwarning("Advertencia", "Los campos Aparato, Cantidad/Peso, Categoría y Estado son obligatorios")
         return
+    
     try:
-        cantidad_peso = int(cantidad_peso)
+        cantidad_peso = float(cantidad_peso)
     except ValueError:
-        messagebox.showwarning( "Advertencia", " La cantidad o peso deben ser cantidades enteras")
+        messagebox.showwarning("Advertencia", "La cantidad/peso debe ser un número")
         return
-
     
-    ws.append([aparato, cantidad_peso, categoria, estado, comentario])
-    wb.save(nombre_archivo)
-    messagebox.showwarning( "Información", " Datos guardados con exito ")
-
-    entry_aparato.delete (0, tk.END)
-    entry_cantidad_peso.delete (0, tk.END)
-    entry_categoria.delete (0, tk.END)
-    entry_estado.delete (0, tk.END)
-    entry_comentario.delete (0, tk.END)
+    # Guardar usando la función unificada
+    guardar_residuo(aparato, cantidad_peso, categoria, estado, comentario)
     
-      
+    messagebox.showinfo("Información", "Datos guardados con éxito en registros_ewaste.xlsx")
+    
+    # Limpiar campos
+    entry_aparato.delete(0, tk.END)
+    entry_cantidad_peso.delete(0, tk.END)
+    entry_categoria.delete(0, tk.END)
+    entry_estado.delete(0, tk.END)
+    entry_comentario.delete(0, tk.END)
+    
+    actualizar_lista()  # Actualizar la lista de registros
 
+def actualizar_lista():
+    """Actualiza el Treeview con los registros actuales"""
+    for item in tree.get_children():
+        tree.delete(item)
+    
+    registros = obtener_todos_registros()
+    for r in registros[-20:]:  # Mostrar últimos 20
+        tree.insert("", tk.END, values=(
+            r['id'], r['fecha'], r['aparato'], 
+            r['cantidad_peso'], r['categoria'], r['estado'], r['destino']
+        ))
+
+# Configurar interfaz
 root = tk.Tk()
-root.title ("Formulario")
+root.title("EcoRecycle - Gestión de Residuos Electrónicos")
+root.geometry("1200x600")
+root.configure(bg='#003B71')
 
-root.configure (bg='#003B71')
-label_style = {"bg": '#003B71' , "fg": "white" }
-entry_style = {"bg": '#39A935' , "fg": "white" }
+# Frame para el formulario
+frame_form = tk.Frame(root, bg='#003B71')
+frame_form.pack(pady=10, padx=10, fill=tk.X)
 
+label_style = {"bg": '#003B71', "fg": "white"}
+entry_style = {"bg": '#39A935', "fg": "white"}
 
-label_aparato = tk.Label(root, text="aparato", **label_style)
-label_aparato.grid(row=0, column=0, padx=10, pady=5)
-entry_aparato = tk.Entry(root, **entry_style)
-entry_aparato.grid(row=0, column=1, padx=10, pady=5)
+# Campos del formulario
+campos = [
+    ("Aparato", 0), ("Cantidad/Peso (kg)", 1), 
+    ("Categoría", 2), ("Estado", 3), ("Comentario", 4)
+]
 
-label_cantidad_peso = tk.Label(root, text="cantidad o peso", **label_style)
-label_cantidad_peso.grid(row=1, column=0, padx=10, pady=5)
-entry_cantidad_peso = tk.Entry(root, **entry_style)
-entry_cantidad_peso.grid(row=1, column=1, padx=10, pady=5)
+entries = {}
+for texto, fila in campos:
+    label = tk.Label(frame_form, text=texto, **label_style)
+    label.grid(row=fila, column=0, padx=10, pady=5, sticky='e')
+    entry = tk.Entry(frame_form, **entry_style, width=30)
+    entry.grid(row=fila, column=1, padx=10, pady=5)
+    entries[texto] = entry
 
-label_categoria = tk.Label(root, text="Categoria (plastico, metal, Vidrio)", **label_style)
-label_categoria.grid(row=2, column=0, padx=10, pady=5)
-entry_categoria = tk.Entry(root, **entry_style)
-entry_categoria.grid(row=2, column=1, padx=10, pady=5)
+entry_aparato = entries["Aparato"]
+entry_cantidad_peso = entries["Cantidad/Peso (kg)"]
+entry_categoria = entries["Categoría"]
+entry_estado = entries["Estado"]
+entry_comentario = entries["Comentario"]
 
-label_estado = tk.Label(root, text="Categoría (Plastico, Metal, Vidrio)", **label_style)
-label_estado.grid(row=3, column=0, padx=10, pady=5)
-entry_estado = tk.Entry(root, **entry_style)
-entry_estado.grid(row=3, column=1, padx=10, pady=5)
+boton_guardar = tk.Button(frame_form, text="Guardar en Base de Datos", 
+                          command=guardar_datos, bg='#BD1C2C', fg='white', width=20)
+boton_guardar.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
 
-label_comentario = tk.Label(root, text="Estado (Funciona, Dañado, Para piezas)", **label_style)
-label_comentario.grid(row=4, column=0, padx=10, pady=5)
-entry_comentario = tk.Entry(root, **entry_style)
-entry_comentario.grid(row=4,column=1, padx=10, pady=5)
+# Frame para la lista de registros
+frame_lista = tk.Frame(root, bg='#003B71')
+frame_lista.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
-boton_guardar = tk.Button(root,text="Guardar", command=guardar_datos, bg='#BD1C2C', fg='white', width=20 )
-boton_guardar.grid(row=5,column=0, columnspan=2, padx=10, pady=5)
+label_lista = tk.Label(frame_lista, text="Registros en Base de Datos", 
+                       bg='#003B71', fg='white', font=('Arial', 12, 'bold'))
+label_lista.pack(pady=5)
 
+# Treeview para mostrar registros
+columns = ('ID', 'Fecha', 'Aparato', 'Peso', 'Categoría', 'Estado', 'Destino')
+tree = ttk.Treeview(frame_lista, columns=columns, show='headings')
 
+for col in columns:
+    tree.heading(col, text=col)
+    tree.column(col, width=100)
 
+tree.pack(fill=tk.BOTH, expand=True)
 
+# Scrollbar
+scrollbar = ttk.Scrollbar(frame_lista, orient=tk.VERTICAL, command=tree.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+tree.configure(yscrollcommand=scrollbar.set)
 
+# Botón para refrescar
+boton_refrescar = tk.Button(frame_lista, text="Refrescar Lista", 
+                            command=actualizar_lista, bg='#2d6a4f', fg='white')
+boton_refrescar.pack(pady=5)
 
+# Cargar datos iniciales
+actualizar_lista()
 
 root.mainloop()
